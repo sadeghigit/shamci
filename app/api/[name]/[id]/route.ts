@@ -6,50 +6,58 @@ type Context = {
     params: Promise<{ name: string, id: string }>
 }
 
-export async function GET(req: NextRequest, ctx: Context) {
+async function beforeRequest(req: NextRequest, ctx: Context) {
     const { name, id } = await ctx.params
 
     const db = await mongoDatabase();
+
+    const info = await db.collection('collections').findOne({ name })
+
+    if (!info) throw new Error("Collection not found")
+
     const collection = db.collection(name)
 
-    if (!ObjectId.isValid(id)) return NextResponse
-        .json({ error: "invalid object id format" }, { status: 400 })
+    if (!ObjectId.isValid(id)) throw new Error("Invalid id format")
 
-    const _id = new ObjectId(id)
-    const data = await collection.findOne({ _id })
+    const document = await collection.findOne({ _id: new ObjectId(id) })
 
-    if (!data) return NextResponse
-        .json({ error: "document not found" }, { status: 400 })
+    if (!document) throw new Error("Document not found")
 
-    return NextResponse.json({ document });
+    return { name, id, document, db, info, collection };
+}
+
+export async function GET(req: NextRequest, ctx: Context) {
+    try {
+        const { document } = await beforeRequest(req, ctx)
+
+        return NextResponse.json({ document });
+    } catch (err: any) {
+        return NextResponse.json({ error: err.message }, { status: 400 })
+    }
 }
 
 export async function DELETE(req: NextRequest, ctx: Context) {
-    const { name, id } = await ctx.params
+    try {
+        const { collection, document } = await beforeRequest(req, ctx)
 
-    const db = await mongoDatabase();
-    const collection = db.collection(name)
+        const { deletedCount } = await collection.deleteOne({ _id: document._id })
 
-    if (!ObjectId.isValid(id)) return NextResponse
-        .json({ error: "invalid object id format" }, { status: 400 })
-
-    const _id = new ObjectId(id)
-    const data = await collection.deleteOne({ _id })
-
-    return NextResponse.json({ deletedCount: data.deletedCount });
+        return NextResponse.json({ deletedCount });
+    } catch (err: any) {
+        return NextResponse.json({ error: err.message }, { status: 400 })
+    }
 }
 
 export async function PUT(req: NextRequest, ctx: Context) {
-    const { name, id } = await ctx.params
+    try {
+        const { collection, document } = await beforeRequest(req, ctx)
 
-    const db = await mongoDatabase();
-    const collection = db.collection(name)
+        const body = await req.json()
 
-    if (!ObjectId.isValid(id)) return NextResponse
-        .json({ error: "invalid object id format" }, { status: 400 })
+        const { modifiedCount } = await collection.updateOne({ _id: document._id }, { $set: body })
 
-    const _id = new ObjectId(id)
-    const data = await collection.updateOne({ _id }, { $set: await req.json() })
-
-    return NextResponse.json({ modifiedCount: data.modifiedCount });
+        return NextResponse.json({ modifiedCount });
+    } catch (err: any) {
+        return NextResponse.json({ error: err.message }, { status: 400 })
+    }
 }

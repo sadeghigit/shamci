@@ -1,0 +1,70 @@
+[{
+  "_id": {
+    "$oid": "68392bf106972825cbe20c99"
+  },
+  "name": "requests",
+  "fields": [
+    {
+      "name": "search",
+      "type": "text",
+      "label": "جستجو"
+    },
+    {
+      "name": "method",
+      "type": "text",
+      "label": "متد"
+    },
+    {
+      "name": "pathname",
+      "type": "text",
+      "label": "مسیر"
+    },
+    {
+      "name": "requestAt",
+      "type": "text",
+      "label": "درخواست"
+    }
+  ],
+  "title": "درخواست ها"
+},
+{
+  "_id": {
+    "$oid": "6839374783e496a5ea5e6fcd"
+  },
+  "name": "collections",
+  "fields": [
+    {
+      "name": "name",
+      "type": "text",
+      "label": "نام"
+    },
+    {
+      "name": "fields",
+      "type": "object-list",
+      "fields": [
+        {
+          "name": "name",
+          "type": "text",
+          "label": "نام"
+        },
+        {
+          "name": "type",
+          "type": "text",
+          "label": "نوع"
+        },
+        {
+          "name": "label",
+          "type": "text",
+          "label": "عنوان"
+        }
+      ],
+      "label": "فیلد ها"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "label": "عنوان"
+    }
+  ],
+  "title": "کالکشن ها"
+}]

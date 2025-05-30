@@ -3,17 +3,19 @@ import type { NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
 
-  if (request.nextUrl.pathname !== '/api/log') {
-    const body = JSON.stringify({
-      method: request.method,
-      pathname: request.nextUrl.pathname,
-      search: request.nextUrl.search,
-      requestAt: new Date(),
-    })
-    const SECRET = process.env.SECRET + ""
-    fetch(process.env.URL + `/api/log`,
-      { method: 'POST', body, headers: { SECRET } })
-  }
+  const method = request.method
+  const pathname = request.nextUrl.pathname
+  const search = request.nextUrl.search
+  const requestAt = new Date()
+
+  if (pathname === '/api/requests' && method === 'POST')
+    return NextResponse.next({ request })
+
+  fetch(process.env.URL + '/api/requests', {
+    method: 'POST',
+    body: JSON.stringify({ method, pathname, search, requestAt }),
+    headers: { SECRET: process.env.SECRET + "" },
+  })
 
   return NextResponse.next({ request })
 }
